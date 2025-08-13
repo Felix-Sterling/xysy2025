@@ -32,29 +32,34 @@
         animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
       }
       .card-hover {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.6, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.6, 1);
       }
       .card-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 16px 32px -8px rgba(59, 130, 246, 0.15), 0 2px 8px rgba(0,0,0,0.04);
+      }
+      .glass {
+        background: rgba(255,255,255,0.6);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 24px rgba(59,130,246,0.08);
       }
     }
   </style>
 </head>
 <body class="bg-gray-50 font-sans text-dark">
   <!-- 顶部导航 -->
-  <header class="bg-white shadow-sm sticky top-0 z-10">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <div class="flex items-center">
-        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-          <i class="fa fa-code text-primary"></i>
+  <header class="bg-white/80 glass shadow-lg sticky top-0 z-20">
+    <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <i class="fa fa-code text-primary text-2xl"></i>
         </div>
-        <h1 class="text-xl font-bold">项目开发中</h1>
+        <h1 class="text-2xl font-extrabold tracking-tight">项目开发中</h1>
       </div>
-      <div class="flex items-center text-sm text-gray-500">
+      <div class="flex items-center text-sm text-gray-500 mt-2 sm:mt-0">
         <span class="flex items-center">
           <span class="w-3 h-3 bg-secondary rounded-full animate-pulse-slow mr-2"></span>
-          开发中
+          <span class="font-medium">开发中</span>
         </span>
       </div>
     </div>
@@ -63,26 +68,24 @@
   <!-- 主内容区 -->
   <main class="container mx-auto px-4 py-8 max-w-5xl">
     <!-- 状态概览 -->
-    <div class="bg-gradient-to-r from-primary to-primary/80 text-white rounded-2xl p-6 mb-8">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div>
-          <h2 class="text-2xl md:text-3xl font-bold mb-2">页面正在开发中</h2>
-          <p class="opacity-90">键盘已经敲冒烟了.....敬请期待</p>
+    <div class="bg-gradient-to-r from-primary/90 via-primary/70 to-primary/80 text-white rounded-3xl p-8 mb-10 shadow-lg">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex-1 min-w-[180px]">
+          <h2 class="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight drop-shadow">页面正在开发中</h2>
+          <p class="opacity-90 text-lg font-medium">键盘已经敲冒烟了.....敬请期待</p>
         </div>
-        <div class="mt-4 md:mt-0 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
-          <div class="flex items-center">
-            <span class="mr-2">完成度</span>
-            <span class="font-bold">7%</span>
-          </div>
+        <div class="mt-4 md:mt-0 bg-white/30 glass px-6 py-3 rounded-full flex items-center gap-3 shadow">
+          <span class="mr-2 text-base font-medium">完成度</span>
+          <span class="font-bold text-2xl text-primary drop-shadow">7%</span>
         </div>
       </div>
-      <div class="mt-6 w-full bg-white/20 rounded-full h-2">
-        <div class="bg-white h-full rounded-full" style="width: 7%"></div>
+      <div class="mt-8 w-full bg-white/30 rounded-full h-3 shadow-inner">
+        <div class="bg-white h-full rounded-full transition-all duration-700" style="width: 7%"></div>
       </div>
       <!-- 跳转按钮 -->
-      <div class="mt-8 flex justify-center">
-        <a href="./test/index.html" target="_blank" class="inline-block bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-6 rounded-lg shadow card-hover transition-colors">
-          <i class="fa fa-eye mr-2"></i>看看现在的网页是什么样子
+      <div class="mt-10 flex justify-center">
+        <a href="./test/index.html" target="_blank" class="inline-flex items-center gap-2 bg-primary hover:bg-primary/80 text-white font-semibold py-3 px-8 rounded-xl shadow-lg card-hover transition-all text-lg tracking-wide">
+          <i class="fa fa-eye text-xl"></i>看看现在的网页是什么样子
         </a>
       </div>
     </div>
@@ -90,79 +93,75 @@
     <!-- 两个主要板块 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <!-- 开发日志 -->
-      <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
-        <div class="bg-gray-50 px-6 py-4 border-b">
-          <h3 class="text-xl font-bold flex items-center">
-            <i class="fa fa-book text-primary mr-2"></i>
+      <div class="bg-white/80 glass rounded-2xl shadow-xl overflow-hidden card-hover transition-all">
+        <div class="bg-gray-50/80 px-8 py-5 border-b flex items-center gap-2">
+          <h3 class="text-2xl font-bold flex items-center tracking-tight">
+            <i class="fa fa-book text-primary mr-3"></i>
             开发日志
           </h3>
         </div>
-        <div class="p-6">
-          <div class="space-y-6">
+        <div class="p-8">
+          <div class="space-y-8">
             <!-- 日志条目 -->
-            <div class="border-l-2 border-primary/30 pl-4 py-1">
-              <div class="flex justify-between items-start mb-1">
-                <h4 class="font-semibold">优化算法，验证阶段</h4>
-                <span class="text-xs text-gray-500">2025-08-12</span>
+            <div class="border-l-4 border-primary/40 pl-5 py-2">
+              <div class="flex justify-between items-center mb-2">
+                <h4 class="font-semibold text-lg">优化算法，验证阶段</h4>
+                <span class="text-xs text-gray-400">2025-08-12</span>
               </div>
-              <p class="text-sm text-gray-600">正在进行页面稳定性的验证阶段，优化多端适配性能，引入加密算法</p>
+              <p class="text-base text-gray-600">正在进行页面稳定性的验证阶段，优化多端适配性能，引入加密算法</p>
             </div>
-            <div class="border-l-2 border-primary/30 pl-4 py-1">
-              <div class="flex justify-between items-start mb-1">
-                <h4 class="font-semibold">基础框架搭建中</h4>
-                <span class="text-xs text-gray-500">2025-08-12</span>
+            <div class="border-l-4 border-primary/40 pl-5 py-2">
+              <div class="flex justify-between items-center mb-2">
+                <h4 class="font-semibold text-lg">基础框架搭建中</h4>
+                <span class="text-xs text-gray-400">2025-08-12</span>
               </div>
-              <p class="text-sm text-gray-600">正在进行页面基础架构和响应式布局的设计，确定色彩方案和交互规范</p>
+              <p class="text-base text-gray-600">正在进行页面基础架构和响应式布局的设计，确定色彩方案和交互规范</p>
             </div>
-          
-          <div class="mt-6 text-sm text-gray-500">
-            <p>下一阶段：验收阶段</p>
+          </div>
+          <div class="mt-8 text-sm text-gray-500">
+            <p>下一阶段：<span class="font-semibold text-primary">验收阶段</span></p>
           </div>
         </div>
       </div>
 
       <!-- 我要建言 -->
       <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
-        <div class="bg-gray-50 px-6 py-4 border-b">
-          <h3 class="text-xl font-bold flex items-center">
-            <i class="fa fa-comments text-secondary mr-2"></i>
+        <div class="bg-gray-50/80 px-8 py-5 border-b flex items-center gap-2">
+          <h3 class="text-2xl font-bold flex items-center tracking-tight">
+            <i class="fa fa-comments text-secondary mr-3"></i>
             我要建言
           </h3>
         </div>
-        <div class="p-6">
-          <p class="text-gray-600 mb-4">有任何想法或建议？联系我！</p>
+        <div class="p-8">
+          <p class="text-gray-600 mb-6 text-base">有任何想法或建议？联系我！</p>
 
-          <div class="mt-6 pt-4 border-t border-gray-100">
-            <h4 class="font-medium mb-2">直接联系开发者</h4>
-            <div class="space-y-2 text-sm">
-              <a href="mailto:dev@example.com" class="flex items-center text-primary hover:underline">
-                <i class="fa fa-envelope-o mr-2 w-5 text-center"></i>
+          <div class="mt-8 pt-4 border-t border-gray-100">
+            <h4 class="font-medium mb-3 text-lg">直接联系开发者</h4>
+            <div class="space-y-3 text-base">
+              <a href="mailto:dev@example.com" class="flex items-center text-primary hover:underline gap-2">
+                <i class="fa fa-envelope-o w-6 text-center"></i>
                 laband@foxmail.com
               </a>
-              <a href="tel:+86123456789" class="flex items-center text-primary hover:underline">
-                <i class="fa fa-phone mr-2 w-5 text-center"></i>
+              <a href="tel:+86123456789" class="flex items-center text-primary hover:underline gap-2">
+                <i class="fa fa-phone w-6 text-center"></i>
                 3506600679
               </a>
             </div>
           </div>
-          
-          <form class="space-y-4">
+          <form class="space-y-6 mt-8">
             <div>
-              <label for="suggestion" class="block text-sm font-medium text-gray-700 mb-1">不可用</label>
-              <textarea id="suggestion" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" placeholder="请输入您的建议..."></textarea>
+              <label for="suggestion" class="block text-base font-medium text-gray-700 mb-2">不可用</label>
+              <textarea id="suggestion" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-base resize-none bg-gray-50/60" placeholder="请输入您的建议..." disabled></textarea>
             </div>
-            
             <div>
-              <label for="contact" class="block text-sm font-medium text-gray-700 mb-1">联系方式（不可用）</label>
-              <input type="text" id="contact" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" placeholder="邮箱或电话，方便我们回复您">
+              <label for="contact" class="block text-base font-medium text-gray-700 mb-2">联系方式（不可用）</label>
+              <input type="text" id="contact" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-base bg-gray-50/60" placeholder="邮箱或电话，方便我们回复您" disabled>
             </div>
-            
-            <button type="submit" class="w-full bg-secondary hover:bg-secondary/90 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center">
-              <i class="fa fa-paper-plane mr-2"></i>
+            <button type="submit" class="w-full bg-secondary hover:bg-secondary/80 text-white py-3 px-6 rounded-xl transition-all flex items-center justify-center text-lg font-semibold cursor-not-allowed" disabled>
+              <i class="fa fa-paper-plane mr-3"></i>
               不可用
             </button>
           </form>
-        
         </div>
       </div>
     </div>
@@ -171,7 +170,7 @@
   <!-- 页脚 -->
   <footer class="bg-dark text-white/70 py-6 mt-12">
     <div class="container mx-auto px-4 text-center text-sm">
-      <p>© 2022级年级处 | 正在开发中</p>
+      <p class="tracking-wide">© 2022级年级处 | 正在开发中</p>
     </div>
   </footer>
 

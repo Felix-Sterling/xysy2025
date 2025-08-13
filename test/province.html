@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>按省份分类 - 高考蹭饭图</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+    .province-btns {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 18px;
+        margin-top: 24px;
+    }
+    .province-btn {
+        display:inline-block;
+        background:#e3f2fd;
+        color:#1976d2;
+        font-size:1.08em;
+        font-weight:500;
+        padding:12px 32px;
+        border-radius:8px;
+        margin:6px 0;
+        text-decoration:none;
+        box-shadow:0 2px 8px rgba(25,118,210,0.08);
+        transition:background 0.2s,color 0.2s;
+    }
+    .province-btn:hover {
+        background:#1976d2;
+        color:#fff;
+    }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-title">高考蹭饭图</div>
+        <div class="navbar-links">
+            <a href="index.html">首页</a>
+            <a href="class.html">按班级分类</a>
+            <a href="province.html" class="active">按省份分类</a>
+            <a href="#school">按院校分类</a>
+            <a href="#desc">数据说明</a>
+        </div>
+    </nav>
+    <div class="banner">选择省份，查看详细数据</div>
+    <div class="main-map province-btns">
+        <div style="text-align:center;margin-bottom:24px;">
+            <label for="province-select" style="font-size:1.08em;color:#1976d2;font-weight:500;">选择省份：</label>
+            <select id="province-select" style="font-size:1.08em;padding:6px 18px;border-radius:6px;border:1px solid #90caf9;">
+                <option value="">请选择</option>
+                <option value="北京">北京</option>
+                <option value="上海">上海</option>
+                <option value="广东">广东</option>
+                <option value="江苏">江苏</option>
+                <option value="浙江">浙江</option>
+                <option value="山东">山东</option>
+                <option value="湖北">湖北</option>
+                <option value="湖南">湖南</option>
+                <option value="四川">四川</option>
+                <option value="重庆">重庆</option>
+                <option value="河北">河北</option>
+                <option value="福建">福建</option>
+                <option value="安徽">安徽</option>
+                <option value="陕西">陕西</option>
+            </select>
+            <label for="city-select" style="font-size:1.08em;color:#1976d2;font-weight:500;margin-left:24px;">筛选城市：</label>
+            <select id="city-select" style="font-size:1.08em;padding:6px 18px;border-radius:6px;border:1px solid #90caf9;">
+                <option value="">全部城市</option>
+                <option value="广州市">广州市</option>
+                <option value="深圳市">深圳市</option>
+                <option value="佛山市">佛山市</option>
+                <option value="东莞市">东莞市</option>
+                <option value="珠海市">珠海市</option>
+                <!-- 可补充更多城市 -->
+            </select>
+        </div>
+        <div id="province-detail" style="text-align:center;font-size:1.08em;color:#1976d2;font-weight:500;">请选择省份和城市查看数据</div>
+    </div>
+    <script>
+    // 示例：切换省份和城市后显示数据（实际数据需后端或Excel解析注入）
+    document.getElementById('province-select').addEventListener('change', function() {
+        updateDetail();
+    });
+    document.getElementById('city-select').addEventListener('change', function() {
+        updateDetail();
+    });
+    function updateDetail() {
+        var prov = document.getElementById('province-select').value;
+        var city = document.getElementById('city-select').value;
+        var detail = document.getElementById('province-detail');
+        if (!prov) {
+            detail.textContent = '请选择省份和城市查看数据';
+            return;
+        }
+        detail.textContent = prov + (city ? ' - ' + city : '') + '：暂无数据（需后端或Excel注入）';
+    }
+    </script>
+    <footer class="footer">© 2025 高考蹭饭图 | 数据仅供参考</footer>
+</body>
+</html>

@@ -1,107 +1,17 @@
-<!DOCTYPE html>
-<html lang="zh-cn">
-<head>
-    <meta charset="UTF-8">
-    <title>书院2025届超级蹭饭图</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script src="js/echarts.min.js"></script>
-    <script src="js/xlsx.full.min.js"></script>
-    <!-- CDN兜底，防止本地js失效 -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-    <script src="js/dropdown.js"></script>
-    <script src="js/main.js" defer></script>
-</head>
-<body>
-    <div class="container">
-        <!-- 优化导航栏容器结构 -->
-        <nav class="navbar">
-            <div class="navbar-inner">
-                <div class="navbar-title">书院2025届</div>
-                <div class="navbar-update">最后更新：2025/8/13</div>
-                <button class="menu-icon" id="menuBtn" aria-label="展开菜单">
-                    <span></span><span></span><span></span>
-                </button>
-                <div class="navbar-links" id="navbarLinks">
-                    <a href="index.html" class="active">首页</a>
-                    <div class="dropdown" id="class-filter">
-                        <a href="javascript:void(0)">按班级分类</a>
-                        <div class="dropdown-content" id="class-dropdown">
-                            <!-- 由JavaScript动态填充 -->
-                        </div>
-                    </div>
-                    <div class="dropdown" id="province-filter">
-                        <a href="javascript:void(0)">按省份分类</a>
-                        <div class="dropdown-content" id="province-dropdown">
-                            <!-- 由JavaScript动态填充 -->
-                        </div>
-                    </div>
-                    <div class="dropdown" id="school-filter">
-                        <a href="javascript:void(0)">按院校分类</a>
-                        <div class="dropdown-content" id="school-dropdown">
-                            <!-- 由JavaScript动态填充 -->
-                        </div>
-                    </div>
-                    <a href="#desc">数据说明</a>
-                </div>
-            </div>
-        </nav>
-        <div class="map-container">
-            <div id="main-map" class="main-map">
-                <div class="init-overlay">
-                    <div class="init-content">
-                        <div class="init-icon">🌏</div>
-                        <h2>书院2025届超级蹭饭图</h2>
-                        <p>正在加载数据...</p>
-                        <div class="init-note">
-                            <div class="loading-spinner"></div>
-                            <p class="loading-text">初始化地图数据中，请稍候...</p>
-                        </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- 悬浮框由 ECharts 自动生成 -->
-        <footer class="footer">© 2022级年级处 | Powered by Felix Sterling</footer>
-    </div>
-    <script>
-(function() {
-    const menuBtn = document.getElementById('menuBtn');
-    const navbarLinks = document.getElementById('navbarLinks');
-    function closeMenu() {
-        navbarLinks.classList.remove('open');
-    }
-    function openMenu() {
-        navbarLinks.classList.add('open');
-    }
-    menuBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (navbarLinks.classList.contains('open')) {
-            closeMenu();
-        } else {
-            openMenu();
-        }
-    });
-    document.addEventListener('click', function(e) {
-        if (!navbarLinks.contains(e.target) && !menuBtn.contains(e.target)) {
-            closeMenu();
-        }
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeMenu();
-    });
-    navbarLinks.addEventListener('click', function(e) {
-        e.stopPropagation();
-    });
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 900) closeMenu();
-    });
-    
-    // 绑定更新时间点击上传事件
-    document.getElementById('update-time').addEventListener('click', function() {
-        document.getElementById('excel-upload').click();
-    });
-})();
-</script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>25届超级蹭饭图</title>
+    <script type="module" a src="/assets/index-DxjLUdmo.js"></script>
+    <link rel="modulepreload" a href="/assets/vendor-CjmK-aEU.js">
+    <link rel="modulepreload" a href="/assets/utils-Ca6gsgWq.js">
+    <link rel="modulepreload" a href="/assets/ui-Df3unzsj.js">
+    <link rel="stylesheet" a href="/assets/index-CrHWLaqy.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>

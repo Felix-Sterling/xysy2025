@@ -2,16 +2,182 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>25届超级蹭饭图</title>
-    <script type="module" a src="assets/index-DxjLUdmo.js"></script>
-    <link rel="modulepreload" a href="assets/vendor-CjmK-aEU.js">
-    <link rel="modulepreload" a href="assets/utils-Ca6gsgWq.js">
-    <link rel="modulepreload" a href="assets/ui-Df3unzsj.js">
-    <link rel="stylesheet" a href="assets/index-CrHWLaqy.css">
+    <script id="mainModule" type="module" src="./assets/index-DxjLUdmo.js"></script>
+    <script>
+      // 守护脚本：捕获主模块及资源加载错误并在加载成功后自动隐藏 loading（容错静态托管场景）
+      (function(){
+        const main = document.getElementById('mainModule');
+        function report(msg){
+          console.error(msg);
+          if(window.showError) window.showError(msg);
+        }
+        if(main){
+          main.addEventListener('error', ()=>{
+            report('主脚本加载失败：'+main.src);
+          });
+          main.addEventListener('load', ()=>{
+            // 脚本本身已加载，等待应用初始化信号；若未在 3s 内初始化，则尝试隐藏加载层以避免永久白屏
+            console.log('主脚本已加载：', main.src);
+            let done = false;
+            const tryHide = ()=>{
+              if(done) return; // already handled
+              // 如果 root 中已有子节点，认为应用已挂载
+              const root = document.getElementById('root');
+              if(root && root.children && root.children.length>0){
+                done = true; window.__appInitialized ? window.__appInitialized() : window.hideLoading && window.hideLoading();
+                return;
+              }
+            };
+            // 监听一个短超时后再尝试隐藏，避免一直等待
+            const t1 = setTimeout(()=>{ tryHide(); }, 3000);
+            // 如果应用主动调用 window.__appInitialized，标记为 done
+            const orig = window.__appInitialized;
+            window.__appInitialized = function(){ done = true; try{ if(orig) orig(); }catch(e){} window.hideLoading && window.hideLoading(); };
+          });
+        }
+
+        // 给 modulepreload 和 stylesheet 添加 onerror
+        document.querySelectorAll('link[rel="modulepreload"],link[rel="stylesheet"]').forEach(lk=>{
+          lk.addEventListener('error', ()=>{
+            const href = lk.getAttribute('href')||lk.getAttribute('data-href');
+            report('静态资源加载失败：'+href);
+          });
+        });
+      })();
+    </script>
+    <link rel="modulepreload" href="./assets/vendor-CjmK-aEU.js">
+    <link rel="modulepreload" href="./assets/utils-Ca6gsgWq.js">
+    <link rel="modulepreload" href="./assets/ui-Df3unzsj.js">
+    <link rel="stylesheet" href="./assets/index-CrHWLaqy.css">
+    <style>
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+      .loading-text {
+        margin-top: 20px;
+        font-size: 18px;
+        color: #333;
+      }
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">正在加载地图数据和录取数据...</div>
+    </div>
+    <script>
+      // 调试用：显示/隐藏加载窗口，以及在白屏时显示错误提示
+      (function(){
+        const overlay = document.getElementById('loadingOverlay');
+        const textEl = overlay && overlay.querySelector('.loading-text');
+
+        function setText(msg){
+          if(textEl) textEl.textContent = msg;
+        }
+
+        window.hideLoading = function() {
+          try{ overlay.style.display = 'none'; }catch(e){}
+        };
+
+        window.showLoading = function(msg){
+          try{ overlay.style.display = 'flex'; setText(msg||'正在加载地图数据和录取数据...'); }catch(e){}
+        };
+
+        window.showError = function(msg){
+          try{
+            overlay.style.background = 'rgba(255,255,255,0.98)';
+            overlay.innerHTML = `
+              <div style="max-width:720px;padding:24px;border-radius:8px;text-align:center;color:#333;">
+                <h2 style="margin:0 0 12px;color:#c00;">加载失败或应用出错</h2>
+                <div style="margin-bottom:12px">${(msg||'发生未知错误，请打开控制台查看错误信息。').replace(/</g,'&lt;')}</div>
+                <div style="font-size:13px;color:#666;margin-bottom:12px">建议：按 F12 打开控制台查看详情，或刷新页面 (Ctrl+R)。</div>
+                <button id="reloadBtn" style="padding:8px 14px;background:#3498db;color:#fff;border:0;border-radius:4px;cursor:pointer">刷新</button>
+              </div>
+            `;
+            const btn = document.getElementById('reloadBtn');
+            if(btn) btn.addEventListener('click',()=>location.reload());
+          }catch(e){console.error(e)}
+        };
+
+        // 全局错误捕获
+        window.addEventListener('error', function(ev){
+          console.error('捕获到错误：', ev.error || ev.message || ev);
+          window.showError(ev.error && ev.error.stack ? ev.error.stack : ev.message || String(ev));
+        });
+        window.addEventListener('unhandledrejection', function(ev){
+          console.error('未处理的 Promise 异常：', ev.reason);
+          window.showError(ev.reason && ev.reason.stack ? ev.reason.stack : String(ev.reason));
+        });
+
+        // 检查关键资源是否可访问（可根据需要调整或扩展）
+        const resources = [
+          './assets/index-DxjLUdmo.js',
+          './assets/vendor-CjmK-aEU.js',
+          './assets/utils-Ca6gsgWq.js',
+          './assets/ui-Df3unzsj.js'
+        ];
+
+        async function checkResources(){
+          try{
+            setText('正在检查前端资源...');
+            const checks = await Promise.all(resources.map(async (url)=>{
+              try{const r = await fetch(url,{method:'HEAD'});return {url,ok:r.ok,status:r.status};}catch(e){return {url,ok:false,status:0,error:String(e)};}
+            }));
+            const failed = checks.filter(c=>!c.ok);
+            if(failed.length){
+              console.warn('部分资源无法访问：', failed);
+              window.showError('部分静态资源加载失败：\n' + failed.map(f=>f.url+(f.status?(' (status:'+f.status+')'):'')).join('\n'));
+              return false;
+            }
+            setText('资源检查通过，正在等待应用初始化...');
+            return true;
+          }catch(e){console.error(e);return false;}
+        }
+
+        // 如果 8 秒内没有手动调用 hideLoading 或应用自行移除覆盖层，则展示提示
+        let initialized = false;
+        function markInitialized(){ initialized = true; window.hideLoading(); }
+        window.__appInitialized = markInitialized; // app 可在加载完成后调用 window.__appInitialized()
+
+        (async function(){
+          const ok = await checkResources();
+          if(!ok) return;
+
+          setTimeout(() => {
+            if(!initialized){
+              setText('应用尚未完成初始化，若一直停留请打开控制台查看错误。');
+              // 继续等待，但提示用户
+            }
+          }, 8000);
+        })();
+
+      })();
+    </script>
   </body>
 </html>

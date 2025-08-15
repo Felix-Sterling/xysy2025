@@ -227,6 +227,70 @@
       })();
     </script>
 
+    <!-- 踢人逻辑（已调整）：仍检测 DevTools 打开但允许复制与打印 -->
+    <script>
+      (function(){
+        // 说明：
+        // - 为响应你的要求，本版本允许页面复制与打印（不再拦截 Ctrl/Cmd+S、Ctrl/Cmd+P、beforeprint 等）。
+        // - 仍然保留对 DevTools 打开的检测（基于 outer/inner 大小差异及 F12 键），在检测到时尝试关闭或回退到 about:blank。
+        // - 注意：浏览器受限，window.close() 不能关闭用户直接打开的标签页，回退到 about:blank 作为备用策略。
+        // - 可通过 window.__disableKickout() 暂时禁用检测（调试时有用）。
+
+        function forceClose(){
+          try{ window.close(); }catch(e){}
+          try{ window.open('','_self'); window.close(); }catch(e){}
+          try{
+            document.documentElement.innerHTML = '';
+            location.replace('about:blank');
+          }catch(e){}
+        }
+
+        var devtoolsOpen = false;
+        var THRESHOLD = 160; // 阈值，可根据需要调整
+        function checkDevTools(){
+          try{
+            var widthDiff = Math.abs(window.outerWidth - window.innerWidth);
+            var heightDiff = Math.abs(window.outerHeight - window.innerHeight);
+            if (widthDiff > THRESHOLD || heightDiff > THRESHOLD) {
+              if(!devtoolsOpen){
+                devtoolsOpen = true;
+                console.warn('检测到 DevTools 打开，尝试关闭页面');
+                forceClose();
+              }
+            } else {
+              devtoolsOpen = false;
+            }
+          }catch(e){}
+        }
+        var intervalId = setInterval(checkDevTools, 800);
+        window.addEventListener('resize', checkDevTools);
+
+        // 仅对 F12 继续做检测/响应（不拦截打印/保存等键）
+        window.addEventListener('keydown', function(e){
+          try{
+            var key = (e.key || '').toLowerCase();
+            if (e.key === 'F12') {
+              // 不阻止默认行为（避免影响打印/复制），但仍尝试关闭页面作为回应
+              console.warn('F12 按下，尝试关闭页面');
+              forceClose();
+            }
+          }catch(e){}
+        }, {capture:true, passive:true});
+
+        // 不再拦截 beforeprint，以允许用户从菜单或快捷键打印
+        // window.addEventListener('beforeprint', function(){ forceClose(); }); // 已移除
+
+        // 暴露接口以便在需要时禁用检测（比如本地调试）
+        window.__disableKickout = function(){
+          try{
+            clearInterval(intervalId);
+            window.removeEventListener('resize', checkDevTools);
+            // keydown listener left running but it's passive and only reacts to F12.
+          }catch(e){}
+        };
+      })();
+    </script>
+
     <script src="./assets/save-protect.js"></script>
   </body>
 </html>

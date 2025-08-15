@@ -83,6 +83,51 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
       }
+
+      /* DevTools 检测弹窗样式（浅红色底色） */
+      .f12-overlay {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 236, 236, 0.95); /* 浅红色背景 */
+        z-index: 10000;
+      }
+      .f12-box {
+        max-width: 720px;
+        width: calc(100% - 48px);
+        padding: 20px;
+        border-radius: 8px;
+        background: #fff6f6;
+        color: #8b0000;
+        text-align: center;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+      }
+      .f12-id {
+        margin-top: 10px;
+        background: #fff;
+        padding: 8px 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        display: inline-block;
+        color: #b30000;
+      }
+      .f12-copy {
+        margin-left: 8px;
+        padding: 6px 10px;
+        background: #c0392b;
+        color: #fff;
+        border: 0;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .f12-note {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #5c0000;
+      }
     </style>
     <!-- 基础路径，确保在子路径 /xysy2025/ 部署时相对资源能正确解析 -->
     <base href="./">
@@ -179,6 +224,255 @@
           }, 8000);
         })();
 
+      })();
+    </script>
+
+    <!-- 强化的 DevTools 检测脚本（无“立即跳转”按钮）：
+         - 打开 DevTools 时将该设备 ID 写入本地黑名单（localStorage）并重定向到 window.f12RedirectUrl（替换历史记录）
+         - 页面加载时若本地黑名单包含当前设备 ID，则立即重定向
+         - 弹窗会显示设备 ID，提供复制按钮，便于你在服务器或管理面板中记录/全网拉黑
+         配置：在任意脚本中设置 window.f12RedirectUrl = 'https://目标.example'（必填以实现踢出/上报）。
+    -->
+    <script>
+      (function(){
+        // 请在部署时把这个全局设置为目标跳转地址，例如：
+        // window.f12RedirectUrl = 'https://example.com/blocked';
+        window.f12RedirectUrl = window.f12RedirectUrl || '';
+
+        // 设备 id key 和本地黑名单 key
+        const DEVICE_ID_KEY = 'xsy_device_id_v1';
+        const BANNED_LIST_KEY = 'xsy_banned_devices_v1';
+
+        // 生成/读取设备 ID（对该浏览器实例持久）
+        function getDeviceId() {
+          try {
+            let id = localStorage.getItem(DEVICE_ID_KEY);
+            if (id) return id;
+            // 优先使用 crypto.randomUUID（现代浏览器）
+            if (window.crypto && crypto.randomUUID) {
+              id = crypto.randomUUID();
+            } else if (window.crypto && crypto.getRandomValues) {
+              const arr = new Uint8Array(16);
+              crypto.getRandomValues(arr);
+              id = Array.from(arr).map(b => ('0' + b.toString(16)).slice(-2)).join('');
+            } else {
+              id = 'xsy-' + Math.random().toString(36).slice(2, 10);
+            }
+            localStorage.setItem(DEVICE_ID_KEY, id);
+            return id;
+          } catch (e) {
+            // 如果 localStorage 不可用，退回到一个 ephemeral id（不会持久）
+            try { console.error(e); } catch(e) {}
+            return 'xsy-ephemeral-' + Date.now();
+          }
+        }
+
+        function readBannedList() {
+          try {
+            const raw = localStorage.getItem(BANNED_LIST_KEY);
+            if (!raw) return [];
+            return JSON.parse(raw) || [];
+          } catch (e) {
+            return [];
+          }
+        }
+        function writeBannedList(list) {
+          try {
+            localStorage.setItem(BANNED_LIST_KEY, JSON.stringify(list || []));
+          } catch (e) {}
+        }
+        function isBanned(id) {
+          try {
+            const list = readBannedList();
+            return list.indexOf(id) !== -1;
+          } catch (e) { return false; }
+        }
+
+        const deviceId = getDeviceId();
+
+        // 如果当前设备已被本地拉黑，立刻重定向（或展示禁止页面）
+        function immediateRedirectIfBanned() {
+          if (!isBanned(deviceId)) return false;
+          const url = (window.f12RedirectUrl || '').toString().trim();
+          if (url) {
+            // 带上标识，便于服务器端记录
+            const target = url + (url.indexOf('?') === -1 ? '?' : '&') + 'banned=1&id=' + encodeURIComponent(deviceId);
+            try { location.replace(target); } catch (e) { location.href = target; }
+          } else {
+            // 如果未配置重定向地址，就显示一个不可关闭的禁止提示
+            showOverlay('你的设备已被禁止访问。设备 ID：', true);
+          }
+          return true;
+        }
+
+        // 创建并显示弹窗（含设备 ID 文本和复制按钮，但无跳转按钮）
+        function showOverlay(prefixText, persistent) {
+          let existing = document.getElementById('f12Overlay');
+          if (existing) return existing;
+          const overlay = document.createElement('div');
+          overlay.className = 'f12-overlay';
+          overlay.id = 'f12Overlay';
+          overlay.innerHTML = `
+            <div class="f12-box" role="dialog" aria-modal="true">
+              <h2 style="margin:0 0 12px">检测到窥探天机，正在跳转...</h2>
+              <div class="f12-note">${(prefixText || '')}</div>
+              <div style="margin-top:8px">
+                <span class="f12-id" id="f12DeviceId">${deviceId}</span>
+                <button class="f12-copy" id="f12CopyBtn">复制 ID</button>
+              </div>
+              <div class="f12-note" style="margin-top:12px">该设备已被移出。若需复审请联系管理员并提供设备 ID。</div>
+            </div>
+          `;
+          document.body.appendChild(overlay);
+          overlay.style.display = 'flex';
+
+          const copyBtn = document.getElementById('f12CopyBtn');
+          if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+              try {
+                const idEl = document.getElementById('f12DeviceId');
+                const text = idEl ? idEl.textContent || idEl.innerText : deviceId;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(text).then(()=> {
+                    copyBtn.textContent = '已复制';
+                    setTimeout(()=>copyBtn.textContent = '复制 ID', 1500);
+                  }).catch(()=>{
+                    fallbackCopy(text, copyBtn);
+                  });
+                } else {
+                  fallbackCopy(text, copyBtn);
+                }
+              } catch (e) { /* ignore */ }
+            }, {passive:true});
+          }
+
+          function fallbackCopy(text, btn) {
+            try {
+              const ta = document.createElement('textarea');
+              ta.value = text;
+              ta.style.position = 'fixed';
+              ta.style.left = '-9999px';
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              document.body.removeChild(ta);
+              if (btn) { btn.textContent = '已复制'; setTimeout(()=>btn.textContent = '复制 ID', 1500); }
+            } catch (e) {}
+          }
+
+          // 如果 persistent=true，不自动关闭
+          if (!persistent) {
+            // 自动隐藏 overlay（在跳转之前）
+            setTimeout(()=>{
+              try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch(e) {}
+            }, 900);
+          }
+
+          return overlay;
+        }
+
+        // 将设备 id 写入本地黑名单并重定向
+        function banAndRedirect(reason) {
+          try {
+            const list = readBannedList();
+            if (list.indexOf(deviceId) === -1) {
+              list.push(deviceId);
+              writeBannedList(list);
+            }
+          } catch (e) { /* ignore */ }
+
+          // 显示 overlay（持久），然后重定向（若配置）
+          showOverlay('检测到窥探天机，设备已被拉黑。设备 ID：', true);
+
+          const url = (window.f12RedirectUrl || '').toString().trim();
+          if (url) {
+            const target = url + (url.indexOf('?') === -1 ? '?' : '&') + 'banned=1&id=' + encodeURIComponent(deviceId) + '&reason=' + encodeURIComponent(reason || 'devtools');
+            // 使用 replace 避免留下历史记录
+            try { setTimeout(()=>{ location.replace(target); }, 700); } catch (e) { setTimeout(()=>{ location.href = target; }, 700); }
+          }
+        }
+
+        // 检测方法：窗口尺寸差异（用于 docked DevTools）
+        function checkByResize() {
+          try {
+            const widthDiff = Math.abs(window.outerWidth - window.innerWidth);
+            const heightDiff = Math.abs(window.outerHeight - window.innerHeight);
+            // 较小屏幕上 threshold 可以相应减小
+            const THRESHOLD = Math.max(160, Math.min(300, Math.floor(Math.min(window.outerWidth, window.outerHeight) * 0.15)));
+            return (widthDiff > THRESHOLD) || (heightDiff > THRESHOLD);
+          } catch (e) {
+            return false;
+          }
+        }
+
+        // 检测方法：console getter 技巧
+        function checkByConsoleGetter() {
+          try {
+            let opened = false;
+            const obj = {};
+            Object.defineProperty(obj, 'toString', {
+              get: function() {
+                opened = true;
+                return function(){ return ''; };
+              }
+            });
+            // 将对象输出到控制台；打开控制台时某些浏览器会访问 getter
+            // 注意：在某些浏览器/环境该技巧可能不起作用，作为辅助检测
+            console.log(obj);
+            return opened;
+          } catch (e) {
+            return false;
+          }
+        }
+
+        // 监听按键组合（F12 / Ctrl+Shift+I/J/C）
+        window.addEventListener('keydown', function(e){
+          try {
+            const key = (e.key || '').toLowerCase();
+            const code = e.keyCode || e.which || 0;
+            if (
+                key === 'f12' || code === 123 ||
+                (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'j' || key === 'c'))
+            ){
+              try { e.preventDefault(); } catch (err) {}
+              banAndRedirect('keyboard');
+            }
+          } catch (e){}
+        }, {capture:true, passive:false});
+
+        // 监听 resize：可能是 docked DevTools 打开
+        let lastResizeCheck = 0;
+        window.addEventListener('resize', function(){
+          try{
+            const now = Date.now();
+            // 限制频率
+            if (now - lastResizeCheck < 200) return;
+            lastResizeCheck = now;
+            if (checkByResize()) banAndRedirect('resize-event');
+          }catch(e){}
+        });
+
+        // 周期性检测（综合 console getter + resize）
+        const POLL_INTERVAL = 700;
+        const poller = setInterval(function(){
+          try {
+            if (checkByResize()) { banAndRedirect('periodic-resize'); return; }
+            if (checkByConsoleGetter()) { banAndRedirect('console-getter'); return; }
+          } catch (e) {
+            // ignore
+          }
+        }, POLL_INTERVAL);
+
+        // 在页面载入时先检查本地黑名单
+        try { immediateRedirectIfBanned(); } catch (e){}
+
+        // 导出一个手动触发接口（供内部管理/测试使用）
+        window.triggerDevtoolsProtect = function(){ banAndRedirect('manual'); };
+
+        // 页面卸载前清理
+        window.addEventListener('beforeunload', function(){
+          try { clearInterval(poller); } catch(e){}
+        });
       })();
     </script>
   </body>
